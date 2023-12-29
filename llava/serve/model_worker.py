@@ -196,23 +196,23 @@ class ModelWorker:
             for x in self.generate_stream(params):
                 yield x
         except ValueError as e:
-            print("Caught ValueError:", e)
+            print("Caught ValueError:", str(e))
             ret = {
-                "text": server_error_msg,
-                "error_code": 1,
+                "text": str(e),
+                "error_code": 2,
             }
             yield json.dumps(ret).encode() + b"\0"
         except torch.cuda.CudaError as e:
-            print("Caught torch.cuda.CudaError:", e)
+            print("Caught torch.cuda.CudaError:", str(e))
             ret = {
-                "text": server_error_msg,
+                "text": str(e),
                 "error_code": 1,
             }
             yield json.dumps(ret).encode() + b"\0"
         except Exception as e:
-            print("Caught Unknown Error", e)
+            print("Caught Unknown Error", str(e))
             ret = {
-                "text": server_error_msg,
+                "text": str(e),
                 "error_code": 1,
             }
             yield json.dumps(ret).encode() + b"\0"
