@@ -75,7 +75,7 @@ def expand2square(pil_img, background_color=(122, 116, 104)):
 
 
 # Function to handle images
-def get_images(source_images, return_pil=False, image_process_mode="Pad"):
+def get_images(source_images, return_pil=False, image_process_mode="Default"):
     images = []
     for i, image in enumerate(source_images):
         if image_process_mode == "Pad":
@@ -119,7 +119,6 @@ def send_chat(
     top_p,
     max_new_tokens,
     controller_url,
-    message_placeholder,
 ):
     worker_addr = get_worker_address(controller_url, model_selector)
 
@@ -127,10 +126,10 @@ def send_chat(
         st.error("No available worker.")
 
     # Assuming state has a method 'get_images' to get PIL images
-    all_images = get_images(state.images, return_pil=True)
-    all_image_hash = [
-        hashlib.md5(image.tobytes()).hexdigest() for image in all_images
-    ]
+    all_images = get_images(state.images)
+    # all_image_hash = [
+    #     hashlib.md5(image.tobytes()).hexdigest() for image in all_images
+    # ]
 
     pload = {
         "model": model_selector,
@@ -139,7 +138,7 @@ def send_chat(
         "top_p": float(top_p),
         "max_new_tokens": min(int(max_new_tokens), 1536),
         "stop": "###",
-        "images": f"List of {len(all_images)} images: {all_image_hash}",
+        "images": all_images,
     }
 
     try:
@@ -151,7 +150,7 @@ def send_chat(
             timeout=10,
         )
         return response
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         st.error("Server error.", e)
 
 
@@ -260,7 +259,6 @@ def main(
                 top_p,
                 max_output_tokens,
                 config.controller_url,
-                message_placeholder,
             )
 
             for chunk in response.iter_lines(
@@ -306,8 +304,8 @@ if __name__ == "__main__":
 
     config = Config()
 
-    # models = get_model_list(config)
-    model_list = ["liuhaotian/llava-v1.5-13b"]
+    model_list = get_model_list(config)
+    #model_list = ["liuhaotian/llava-v1.5-13b"]
     # model, tokenizer, image_processor, context_len = load_pretrained_model(
     #     model_path="liuhaotian/llava-v1.5-13b",
     #     load_4bit=True,
